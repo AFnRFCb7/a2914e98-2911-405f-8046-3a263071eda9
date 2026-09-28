@@ -18,7 +18,7 @@
                                     } ;
                             androidSdk = androidComposition.androidsdk ;
                             implementation =
-                                { config , pkgs , options , ... } :
+                                { config , lib , pkgs , ... } :
                                     {
                                         options.android-application =
                                             {

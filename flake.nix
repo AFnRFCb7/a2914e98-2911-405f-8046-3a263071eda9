@@ -130,7 +130,7 @@
                                                                                                             ABSOLUTE_INPUT_FILE="$( realpath "$RELATIVE_INPUT_FILE" )" || failure 7667864193624809
                                                                                                             HASH="$( echo "$RELATIVE_FILE" | sha512sum | cut --characters 1-128 )" || failure 4885129150129948
                                                                                                             mkdir --parents "gradle-dependencies.exploded/$HASH"
-                                                                                                            cd gradle-dependencies.exploded/$HASH
+                                                                                                            cd "gradle-dependencies.exploded/$HASH"
                                                                                                             PERMISSIONS="$( stat --printf %a "$ABSOLUTE_INPUT_FILE" )" || failure 6903848712762824
                                                                                                             TYPE="$( stat %F "$ABSOLUTE_INPUT_FILE" )" || failure 9926977401820663
                                                                                                             jq \

@@ -24,7 +24,7 @@
                                             {
                                                 options.android-application =
                                                     {
-                                                        build = null ;
+                                                        build = null  ;
                                                         fetch =
                                                             lib.mkOption
                                                                 {

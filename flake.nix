@@ -102,7 +102,7 @@
                                                                                 git commit -m "$1" --allow-empty-message
                                                                             '' ;
                                                                     } ;
-                                                                type = implementation-parameters.lib.types.package ;
+                                                                type = lib.types.package ;
                                                         } ;
                                             } ;
                                 } ;

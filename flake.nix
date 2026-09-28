@@ -24,7 +24,80 @@
                                             {
                                                 options.android-application =
                                                     {
-                                                        build = null  ;
+                                                        build =
+                                                            lib.mkOption
+                                                                {
+                                                                    default =
+                                                                        pkgs.writeShellApplication
+                                                                            {
+                                                                                name = "build" ;
+                                                                                runtimeInputs =
+                                                                                    [
+                                                                                        pkgs.coreutils
+                                                                                        pkgs.findutils
+                                                                                        (
+                                                                                            pkgs.writeShellApplication
+                                                                                                {
+                                                                                                    name = "implode" ;
+                                                                                                    runtimeInputs =
+                                                                                                        [
+                                                                                                            pkgs.jq
+                                                                                                            ( failure 3989211821494553 )
+                                                                                                        ] ;
+                                                                                                    text =
+                                                                                                        ''
+                                                                                                            RELATIVE_INPUT_FILE="$1"
+                                                                                                            PERMISSIONS="$( jq --raw-output ".permissions" "$RELATIVE_INPUT_FILE/manifest.json" )" || failure 9329627089274214
+                                                                                                            TAG="$( jq --raw-output ".tag" "$RELATIVE_INPUT_FILE/manifest.json" )" || failure 3951886682959815
+                                                                                                            TYPE="$( jq --raw-output ".type" "$RELATIVE_INPUT_FILE/manifest.json" )" || failure 9577007111979114
+                                                                                                            RELATIVE_OUTPUT_FILE="$RESOURCE/grade-dependencies/$TAG"
+                                                                                                            RELATIVE_OUTPUT_DIRECTORY="$( dirname "$RELATIVE_OUTPUTFILE" )" || failure 6433247134074053
+                                                                                                            mkdir --parents "$RELATIVE_OUTPUT_DIRECTORY"
+                                                                                                            if [[ "$TYPE" == "directory" ]]
+                                                                                                            then
+                                                                                                                mkdir --parents "$RELATIVE_OUTPUT_FILE"
+                                                                                                            elif [[ "$TYPE" == "regular file" ]]
+                                                                                                            then
+                                                                                                                cat "$RELATIVE_INPUT_FILE/parts/*" > "$RELATIVE_OUTPUT_FILE"
+                                                                                                            else
+                                                                                                                failure 6788572980989981 "$RELATIVE_INPUT_FILE" "$PERMISSIONS" "$TAG" "$TYPE"
+                                                                                                            fi
+                                                                                                            chmod "$PERMISSIONS" "$REGULAR_OUTPUT_FILE
+                                                                                                        '' ;
+                                                                                                }
+                                                                                        )
+                                                                                        ( failure 6303048773883275 )
+                                                                                    ] ;
+                                                                                text =
+                                                                                    ''
+                                                                                        RESOURCE="$( mktemp --directory )" || failure 1131106762433829
+                                                                                        export RESOURCE
+                                                                                        cp --recursive ${ ./. }/. "$RESOURCE"
+                                                                                        chmod -R a+rwx "$RESOURCE"
+                                                                                        find "$RESOURCE/gradle-dependencies.exploded" -mindepth 1 -maxdepth 1 -exec implode {} \;
+                                                                                        export ANDROID_HOME="${ androidSdk }"
+                                                                                        WORK_DIR="$(mktemp --directory)" || failure 3113983533329552
+                                                                                        echo "WORK_DIR=$WORK_DIR"
+                                                                                        cd "$WORK_DIR"
+                                                                                        cp --recursive "$RESOURCE/frontend/mobile/." .
+                                                                                        chmod --recursive u+rwX "$WORK_DIR"
+                                                                                        find "$WORK_DIR" -type d -name "*.jar.exploded" -exec implode {} \;
+                                                                                        export HOME="$WORK_DIR/home"
+                                                                                        export GRADLE_USER_HOME="$HOME/.gradle"
+                                                                                        mkdir --parents "$GRADLE_USER_HOME"
+                                                                                        cp --recursive "$WORK_DIR/gradle-dependencies/." "$GRADLE_USER_HOME/caches/"
+                                                                                        chmod --recursive u+rwX "$WORK_DIR"
+                                                                                        gradle \
+                                                                                            -Pandroid.aapt2FromMavenOverride="$ANDROID_HOME/libexec/android-sdk/build-tools/35.0.0/aapt2" \
+                                                                                            build \
+                                                                                            --offline
+                                                                                        mkdir --parents "$out"
+                                                                                        cp --recursive app/build/outputs/. "$out"/
+                                                                                        rm --recursive --force "$RESOURCE" "$WORK_DIR"
+                                                                                    '' ;
+                                                                            } ;
+                                                                    type = lib.types.functionTo lib.types.package ;
+                                                                } ;
                                                         fetch =
                                                             lib.mkOption
                                                                 {

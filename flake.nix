@@ -31,7 +31,7 @@
                                                                     default =
                                                                         pkgs.writeShellApplication
                                                                             {
-                                                                                name = "download" ;
+                                                                                name = "fetch" ;
                                                                                 runtimeInputs =
                                                                                     [
                                                                                         pkgs.coreutils

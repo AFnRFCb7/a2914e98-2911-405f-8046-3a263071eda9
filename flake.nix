@@ -127,7 +127,7 @@
                                                                                                     text =
                                                                                                         ''
                                                                                                             RELATIVE_INPUT_FILE="$1"
-                                                                                                            ABSOLUTE_INPUT_FILE="$( realpath "$RELATIVE_FILE" )" || failure 7667864193624809
+                                                                                                            ABSOLUTE_INPUT_FILE="$( realpath "$RELATIVE_INPUT_FILE" )" || failure 7667864193624809
                                                                                                             HASH="$( echo "$RELATIVE_FILE" | sha512sum | cut --characters 1-128 )" || failure 4885129150129948
                                                                                                             mkdir --parents "gradle-dependencies.exploded/$HASH"
                                                                                                             cd gradle-dependencies.exploded/$HASH

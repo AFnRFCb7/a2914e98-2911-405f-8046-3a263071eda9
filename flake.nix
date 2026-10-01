@@ -4,7 +4,7 @@
         { self } :
             {
                 lib =
-                    { failure } :
+                    { } :
                         let
                             implementation =
                                 { config , lib , pkgs , ... } :
@@ -42,7 +42,7 @@
                                                                                                     runtimeInputs =
                                                                                                         [
                                                                                                             pkgs.jq
-                                                                                                            ( failure 3989211821494553 )
+                                                                                                            ( config.failure { } )
                                                                                                         ] ;
                                                                                                     text =
                                                                                                         ''
@@ -66,7 +66,7 @@
                                                                                                         '' ;
                                                                                                 }
                                                                                         )
-                                                                                        ( failure 6303048773883275 )
+                                                                                        ( config.failure { } )
                                                                                     ] ;
                                                                                 text =
                                                                                     ''
@@ -111,7 +111,7 @@
                                                                                         pkgs.findutils
                                                                                         pkgs.gradle
                                                                                         pkgs.gnutar
-                                                                                        ( failure 5292191918653840 )
+                                                                                        ( config.failure { } )
                                                                                         androidSdk
                                                                                         (
                                                                                             pkgs.writeShellApplication
@@ -122,7 +122,7 @@
                                                                                                             pkgs.coreutils
                                                                                                             pkgs.git
                                                                                                             pkgs.jdk
-                                                                                                            ( failure 4967196713656753 )
+                                                                                                            ( config.failure { } )
                                                                                                         ] ;
                                                                                                     text =
                                                                                                         ''

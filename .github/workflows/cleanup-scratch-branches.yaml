@@ -1,0 +1,66 @@
+name: Cleanup scratch branches
+on:
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only report branches that would be deleted'
+        type: boolean
+        default: true
+permissions:
+  contents: write
+  pull-requests: read
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean old scratch branches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RETENTION_DAYS=30
+          CUTOFF=$(date -u -d "$RETENTION_DAYS days ago" +%s)
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Retention: $RETENTION_DAYS days"
+          echo "Dry run: $DRY_RUN"
+          gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/branches?per_page=100" \
+            > branches.json
+          gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" \
+            > pulls.json
+          jq -r '
+            add[]
+            | select(.head.repo != null)
+            | select(.head.repo.full_name == env.GITHUB_REPOSITORY)
+            | .head.ref
+          ' pulls.json > open-prs.txt
+          jq -r --argjson cutoff "$CUTOFF" '
+            add[]
+            | select(.name | startswith("scratch/"))
+            | select(.protected == false)
+            | (.commit.commit.committer.date //
+               .commit.commit.author.date) as $date
+            | select($date != null)
+            | select(($date | fromdateiso8601) < $cutoff)
+            | .name
+          ' branches.json > candidates.txt
+          while IFS= read -r branch; do
+            [[ -z "$branch" ]] && continue
+            if grep -Fxq -- "$branch" open-prs.txt; then
+              echo "Keeping $branch (open PR)"
+              continue
+            fi
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "Would delete: $branch"
+            else
+              echo "Deleting: $branch"
+              gh api --method DELETE \
+                "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch"
+            fi
+          done < candidates.txt
+          echo "Cleanup complete."
